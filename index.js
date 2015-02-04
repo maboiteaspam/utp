@@ -141,7 +141,7 @@ var Connection = function(port, host, socket, syn) {
 	};
 
 	this.once('finish', sendFin);
-	this.once('close', function() {
+	this.once('finish', function() {
 		if (!syn) setTimeout(socket.close.bind(socket), CLOSE_GRACE);
 		clearInterval(resend);
 		clearInterval(keepAlive);
@@ -343,6 +343,16 @@ Server.prototype.listen = function(port, onlistening) {
 	if (onlistening) self.once('listening', onlistening);
 
 	socket.bind(port);
+};
+
+Server.prototype.close = function() {
+	var socket = this._socket;
+	var connections = this._connections;
+
+    Object.keys(connections).forEach(function(i){
+        connections[i].end();
+    });
+	socket.close();
 };
 
 exports.createServer = function(onconnection) {
